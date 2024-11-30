@@ -1,0 +1,12 @@
+[package]
+name = "ribitol"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+description = "私用の競技プログラミングライブラリ"
+authors = ["Yukkku"]
+license = "MIT"
+repository = "https://github.com/Yukkku/ribitol"
+readme = "README.md"
+
+[dependencies]
