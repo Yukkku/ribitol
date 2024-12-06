@@ -91,7 +91,7 @@ impl<const N: u32> ModInt<N> {
     /// - *O*(log *N*)
     #[must_use]
     pub fn inv(&self) -> Self {
-        Self(1).mul_pow(*self, Self::PHI)
+        Self(1).mul_pow(*self, Self::PHI - 1)
     }
 }
 
