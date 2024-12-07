@@ -30,7 +30,7 @@ const fn phi_const(mut n: u32) -> u32 {
 pub struct ModInt<const N: u32 = 998244353>(u32);
 
 impl<const N: u32> ModInt<N> {
-    const PHI: u32 = phi_const(N);
+    pub(super) const PHI: u32 = phi_const(N);
 
     /// `val`を`N`で割って`ModInt<N>`を作る
     ///
@@ -59,9 +59,9 @@ impl<const N: u32> ModInt<N> {
             if s == 0 {
                 return r;
             }
-            b = b * b;
+            b *= b;
             if s & 1 == 1 {
-                r = r * b;
+                r *= b;
             }
         }
     }
