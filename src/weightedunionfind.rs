@@ -85,6 +85,11 @@ impl<G: Group> WeightedUnionFind<G> {
 
     /// `group.opinv(x[a], x[b])` が一意に定まるか判定し, 一意なら計算する.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -104,6 +109,11 @@ impl<G: Group> WeightedUnionFind<G> {
     }
 
     /// `group.opinv(x[a], x[b])` が一意に定まるか判定し, 一意なら計算する.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
     ///
     /// # Time complexity
     ///
@@ -125,6 +135,10 @@ impl<G: Group> WeightedUnionFind<G> {
 
     /// UnionFindとしてどの連結成分に属しているか判別する.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -135,6 +149,10 @@ impl<G: Group> WeightedUnionFind<G> {
     }
 
     /// UnionFindとしてどの連結成分に属しているか判別する.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
     ///
     /// # Time complexity
     ///
@@ -147,6 +165,10 @@ impl<G: Group> WeightedUnionFind<G> {
 
     /// UnionFindとして, 連結成分の要素数を数える.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -157,6 +179,10 @@ impl<G: Group> WeightedUnionFind<G> {
     }
 
     /// UnionFindとして, 連結成分の要素数を数える.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
     ///
     /// # Time complexity
     ///
@@ -228,6 +254,11 @@ impl<G: Group> WeightedUnionFind<G> {
     /// `group.opinv(x[a], x[b]) ==  diff` だという情報を追加する.
     ///
     /// UnionFindとしては, 要素`a`が属するグループと要素`b`が属するグループを1つのグループにマージする.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
     ///
     /// # Time complexity
     ///

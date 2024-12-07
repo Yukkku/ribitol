@@ -38,6 +38,11 @@ impl UnionFind {
     /// 要素`a`が属するグループと要素`b`が属するグループを1つのグループにマージし, 新しいグループの代表を返す.
     /// 最初から同じグループに属していた場合は, 何もせずにそのグループの代表を返す.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -63,6 +68,10 @@ impl UnionFind {
 
     /// 要素`a`が属するグループの代表を返す.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -83,6 +92,10 @@ impl UnionFind {
 
     /// 要素`a`が属するグループの代表を返す.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(log(*n*))
@@ -97,6 +110,10 @@ impl UnionFind {
 
     /// 要素`a`が属するグループの要素数を返す.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -107,6 +124,10 @@ impl UnionFind {
     }
 
     /// 要素`a`が属するグループの要素数を返す.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
     ///
     /// # Time complexity
     ///
@@ -119,6 +140,11 @@ impl UnionFind {
 
     /// 要素`a`, `b`が同じグループに属するか判定する.
     ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
+    ///
     /// # Time complexity
     ///
     /// - *O*(α(*n*))
@@ -129,6 +155,11 @@ impl UnionFind {
     }
 
     /// 要素`a`, `b`が同じグループに属するか判定する.
+    ///
+    /// # Constraints
+    ///
+    /// - `a < self.len()`
+    /// - `b < self.len()`
     ///
     /// # Time complexity
     ///

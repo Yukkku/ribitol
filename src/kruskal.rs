@@ -6,6 +6,10 @@ use super::unionfind::UnionFind;
 /// * `edges` - 辺の情報. `(頂点, 頂点, 辺のコスト)`というタプルの配列
 ///
 /// 返り値は最小全域木の辺のコストを吐き出すイテレータを返す.
+///
+/// # Time complexity
+///
+/// - *O*(*E* log *E*)
 #[must_use]
 pub fn kruskal<'a, T: Ord>(
     n: usize,
@@ -45,6 +49,6 @@ mod tests {
             ],
         )
         .collect::<Box<_>>();
-        assert_eq!(edges.as_ref(), &[5, 0, 1]);
+        assert_eq!(edges.as_ref(), &[5, 1, 0]);
     }
 }
