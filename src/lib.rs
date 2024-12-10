@@ -6,5 +6,6 @@ pub mod modint;
 pub mod radixheap;
 pub mod rangeset;
 pub mod rollinghash;
+pub mod segmenttree;
 pub mod unionfind;
 pub mod weightedunionfind;
