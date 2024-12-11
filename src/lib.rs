@@ -7,5 +7,6 @@ pub mod radixheap;
 pub mod rangeset;
 pub mod rollinghash;
 pub mod segmenttree;
+pub mod sparsetable;
 pub mod unionfind;
 pub mod weightedunionfind;
