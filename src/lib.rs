@@ -1,3 +1,4 @@
+pub mod binaryindexedtree;
 pub mod dijkstra;
 pub mod fft;
 pub mod kruskal;
