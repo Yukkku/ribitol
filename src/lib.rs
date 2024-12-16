@@ -7,6 +7,7 @@ pub mod lazysegtree;
 pub mod mo;
 pub mod modint;
 pub mod persistentarray;
+pub mod persistentunionfind;
 pub mod radixheap;
 pub mod rangeset;
 pub mod rollinghash;
