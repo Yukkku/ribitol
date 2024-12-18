@@ -16,3 +16,4 @@ pub mod segmenttree;
 pub mod sparsetable;
 pub mod unionfind;
 pub mod weightedunionfind;
+pub mod z;
