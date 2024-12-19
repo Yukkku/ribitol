@@ -12,6 +12,7 @@ pub mod persistentunionfind;
 pub mod radixheap;
 pub mod rangeset;
 pub mod rollinghash;
+pub mod scc;
 pub mod segmenttree;
 pub mod sparsetable;
 pub mod unionfind;
