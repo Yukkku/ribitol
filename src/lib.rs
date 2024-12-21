@@ -16,6 +16,7 @@ pub mod scc;
 pub mod segmenttree;
 pub mod sparsetable;
 pub mod unionfind;
+pub mod waveletmatrix;
 pub mod weightedunionfind;
 pub mod wordsizetree;
 pub mod z;
