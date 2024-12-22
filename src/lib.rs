@@ -15,6 +15,7 @@ pub mod rollinghash;
 pub mod scc;
 pub mod segmenttree;
 pub mod sparsetable;
+pub mod topologicalsort;
 pub mod unionfind;
 pub mod waveletmatrix;
 pub mod weightedunionfind;
