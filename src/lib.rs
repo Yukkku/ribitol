@@ -4,6 +4,7 @@ pub mod dijkstra;
 pub mod fft;
 pub mod kruskal;
 pub mod lazysegtree;
+pub mod mastertree;
 pub mod mo;
 pub mod modint;
 pub mod persistentarray;
