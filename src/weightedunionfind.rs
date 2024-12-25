@@ -1,42 +1,10 @@
 use std::num::NonZero;
 
+use crate::util::{Associativity, Identity, Inverse};
+
 /// 群を表すトレイト
-pub trait Group {
-    /// 群の元を表現する型
-    type T: Eq;
-
-    /// 群の単位元を返す
-    #[must_use]
-    fn e(&self) -> Self::T;
-
-    /// 逆元を求める
-    #[must_use]
-    fn inv(&self, a: &Self::T) -> Self::T;
-
-    /// 群の演算
-    ///
-    /// 以下の条件を満たす.
-    /// - 任意の `x`, `y`, `z` について `self.op(&self.op(&x, &y), &z) == self.op(&x, &self.op(&y, &z))`
-    /// - 任意の `x` について `self.op(&self.e(), &x) == x && self.op(&x, &self.e()) == x`
-    #[must_use]
-    fn op(&self, a: &Self::T, b: &Self::T) -> Self::T;
-
-    /// 逆元との積を求める
-    ///
-    /// `self.op(a, &self.inv(b))` と同じ
-    #[must_use]
-    fn opinv(&self, a: &Self::T, b: &Self::T) -> Self::T {
-        self.op(a, &self.inv(b))
-    }
-
-    /// 逆元の積を求める
-    ///
-    /// `self.op(&self.inv(a), b)` と同じ
-    #[must_use]
-    fn invop(&self, a: &Self::T, b: &Self::T) -> Self::T {
-        self.op(&self.inv(a), b)
-    }
-}
+pub trait Group: Identity + Associativity + Inverse {}
+impl<T: Identity + Associativity + Inverse> Group for T {}
 
 #[derive(Copy, Clone)]
 enum Node<G: Group> {
@@ -55,6 +23,9 @@ pub enum Diff<T> {
     Connected(T),
 }
 
+/// 重み付きUnionFind.
+///
+/// いくつかの値の差分の情報から指定した値の差分を高速に答えられる.
 pub struct WeightedUnionFind<G: Group>(Box<[Node<G>]>, G);
 
 impl<G: Group> WeightedUnionFind<G> {
@@ -81,6 +52,16 @@ impl<G: Group> WeightedUnionFind<G> {
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// WeightedUnionFindが空か判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     /// `group.opinv(x[a], x[b])` が一意に定まるか判定し, 一意なら計算する.
@@ -285,14 +266,12 @@ impl<G: Group> WeightedUnionFind<G> {
                 self.0[b] = Node::Root(size, true);
                 self.0[a] = Node::NotRoot(b, self.1.op(&self.1.invop(&ah, diff), &bh));
             }
+        } else if a_size > b_size {
+            self.0[a] = Node::Root(size, false);
+            self.0[b] = Node::NotRoot(a, self.1.e());
         } else {
-            if a_size > b_size {
-                self.0[a] = Node::Root(size, false);
-                self.0[b] = Node::NotRoot(a, self.1.e());
-            } else {
-                self.0[b] = Node::Root(size, false);
-                self.0[a] = Node::NotRoot(b, self.1.e());
-            }
+            self.0[b] = Node::Root(size, false);
+            self.0[a] = Node::NotRoot(b, self.1.e());
         }
     }
 }
@@ -305,18 +284,23 @@ mod tests {
     fn diff() {
         /// ℤの加法群
         struct IntGroup;
-        impl Group for IntGroup {
+        impl super::super::util::Magma for IntGroup {
             type T = i32;
-            fn e(&self) -> i32 {
-                0
-            }
-            fn inv(&self, a: &i32) -> i32 {
-                -a
-            }
             fn op(&self, a: &i32, b: &i32) -> i32 {
                 a + b
             }
         }
+        impl Inverse for IntGroup {
+            fn inv(&self, a: &i32) -> i32 {
+                -a
+            }
+        }
+        impl Identity for IntGroup {
+            fn e(&self) -> i32 {
+                0
+            }
+        }
+        impl Associativity for IntGroup {}
 
         let mut wuf = WeightedUnionFind::new(IntGroup, 4);
 

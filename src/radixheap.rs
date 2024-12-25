@@ -1,12 +1,9 @@
+use super::util::HasMin;
+
 /// `RadixHeap` に値を乗せるためのトレイト
-pub trait Radix: Copy + Ord {
+pub trait Radix: Copy + Ord + HasMin {
     /// `radix_dist` が返す可能性のある最大の値.
     const MAX_DIST: usize;
-
-    /// この`T`の最小値.
-    ///
-    /// 任意の `x: Self` について `Self::MIN <= x` を満たす必要がある.
-    const MIN: Self;
 
     /// `RadixHeap`で用いられる超距離関数
     ///
@@ -25,8 +22,6 @@ macro_rules! impl_int {
     ($($t: ty),*) => {$(
         impl Radix for $t {
             const MAX_DIST: usize = Self::BITS as usize;
-            const MIN: Self = Self::MIN;
-
 
             fn radix_dist(&self, rhs: &Self) -> usize {
                 (Self::BITS - (self ^ rhs).leading_zeros()) as usize
@@ -61,7 +56,7 @@ impl<T: Radix> RadixHeap<T> {
             buckets: std::iter::repeat_with(Vec::new)
                 .take(T::MAX_DIST + 1)
                 .collect(),
-            last: T::MIN,
+            last: T::min_value(),
             len: 0,
         }
     }
@@ -77,7 +72,7 @@ impl<T: Radix> RadixHeap<T> {
     ///
     /// - *O*(1)
     pub fn push(&mut self, item: T) {
-        debug_assert!(&item >= &self.last);
+        debug_assert!(item >= self.last);
         self.len += 1;
         self.buckets[self.last.radix_dist(&item)].push(item);
     }
@@ -93,14 +88,7 @@ impl<T: Radix> RadixHeap<T> {
             self.len -= 1;
             return Some(r);
         };
-        let Some(rak) = self
-            .buckets
-            .iter_mut()
-            .find(|v| v.len() > 0)
-            .map(std::mem::take)
-        else {
-            return None;
-        };
+        let rak = std::mem::take(self.buckets.iter_mut().find(|v| !v.is_empty())?);
 
         self.last = *rak.iter().min().unwrap();
 
@@ -109,7 +97,7 @@ impl<T: Radix> RadixHeap<T> {
         }
 
         self.len -= 1;
-        return self.buckets[0].pop();
+        self.buckets[0].pop()
     }
 
     /// ヒープの持つ要素の総数を返す.
@@ -120,6 +108,16 @@ impl<T: Radix> RadixHeap<T> {
     #[must_use]
     pub fn len(&self) -> usize {
         self.len
+    }
+
+    /// ヒープが空かどうか調べる.
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
     }
 
     /// ヒープから最後に取り出した値を返す.

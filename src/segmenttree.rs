@@ -1,8 +1,7 @@
-pub trait Monoid {
-    type T: Clone;
-    fn e(&self) -> Self::T;
-    fn op(&self, a: &Self::T, b: &Self::T) -> Self::T;
-}
+use super::util::{Associativity, Identity};
+
+pub trait Monoid: Associativity + Identity {}
+impl<T: Associativity + Identity> Monoid for T {}
 
 #[derive(Clone)]
 pub struct SegmentTree<M: Monoid>(Box<[M::T]>, usize, M);
@@ -57,6 +56,16 @@ impl<M: Monoid> SegmentTree<M> {
         self.1
     }
 
+    /// SegmentTreeが空かどうか調べる
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(*1*)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.1 == 0
+    }
+
     /// SegmentTreeの`index`番目の値を`value`に設定する.
     ///
     /// # Constraints
@@ -98,25 +107,22 @@ impl<M: Monoid> SegmentTree<M> {
     /// - *O*(1)
     /// - *O*(log *n*)  (ラッパーのデストラクタ)
     #[must_use]
-    pub fn setter<'a>(
-        &'a mut self,
-        index: usize,
-    ) -> impl std::ops::DerefMut<Target = M::T> + use<'a, M> {
+    pub fn setter(&mut self, index: usize) -> impl std::ops::DerefMut<Target = M::T> + use<'_, M> {
         debug_assert!(index < self.len());
 
         struct Wrapper<'a, M: Monoid>(&'a mut SegmentTree<M>, usize);
-        impl<'a, M: Monoid> std::ops::Deref for Wrapper<'a, M> {
+        impl<M: Monoid> std::ops::Deref for Wrapper<'_, M> {
             type Target = M::T;
             fn deref(&self) -> &M::T {
                 &self.0 .0[self.1]
             }
         }
-        impl<'a, M: Monoid> std::ops::DerefMut for Wrapper<'a, M> {
+        impl<M: Monoid> std::ops::DerefMut for Wrapper<'_, M> {
             fn deref_mut(&mut self) -> &mut M::T {
                 &mut self.0 .0[self.1]
             }
         }
-        impl<'a, M: Monoid> Drop for Wrapper<'a, M> {
+        impl<M: Monoid> Drop for Wrapper<'_, M> {
             fn drop(&mut self) {
                 self.0.update(self.1);
             }
@@ -174,8 +180,8 @@ impl<M: Monoid> SegmentTree<M> {
             }
             slice = &slice[len..];
             len >>= 1;
-            left_index = left_index >> 1;
-            right_index = right_index >> 1;
+            left_index >>= 1;
+            right_index >>= 1;
         }
         self.2.op(&left_val, &right_val)
     }
@@ -257,13 +263,16 @@ mod tests {
     #[test]
     fn sum() {
         struct SumMonoid;
-        impl Monoid for SumMonoid {
+        impl super::super::util::Magma for SumMonoid {
             type T = i32;
-            fn e(&self) -> i32 {
-                0
-            }
             fn op(&self, a: &i32, b: &i32) -> i32 {
                 a + b
+            }
+        }
+        impl Associativity for SumMonoid {}
+        impl Identity for SumMonoid {
+            fn e(&self) -> i32 {
+                0
             }
         }
 

@@ -180,8 +180,8 @@ impl<const N: usize> WaveletMatrix<N> {
             std::array::from_fn::<_, N, _>(|i| {
                 let mut nv = Vec::with_capacity(len);
                 let pv = match &v {
-                    Slice(v) => v.as_ref(),
-                    Vector(v) => v.as_ref(),
+                    Slice(v) => *v,
+                    Vector(v) => v,
                 };
                 let mask = 1 << (N - 1 - i);
                 let mut ret = std::iter::repeat_n(0, (len + 63) >> 6).collect::<Box<_>>();
@@ -221,7 +221,7 @@ impl<const N: usize> WaveletMatrix<N> {
             std::array::from_fn::<_, N, _>(|i| {
                 let mut nv = Vec::with_capacity(len);
                 let pv = match &v {
-                    Slice(v) => v.as_ref(),
+                    Slice(v) => *v,
                     Vector(v) => v.as_ref(),
                 };
                 let mask = 1 << (N - i - 1);
@@ -254,6 +254,16 @@ impl<const N: usize> WaveletMatrix<N> {
     #[must_use]
     pub fn len(&self) -> usize {
         self.1
+    }
+
+    /// WaveletMatrixが空かどうか返す
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.1 == 0
     }
 
     fn range2pair(&self, range: impl std::ops::RangeBounds<usize>) -> (usize, usize) {

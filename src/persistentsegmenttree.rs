@@ -48,8 +48,7 @@ impl<M: Monoid> RawPersistentSegmentTree<M> {
                 }
             }
         }
-
-        return val;
+        val
     }
 
     fn prod_right(&self, mut index: usize, monoid: &M) -> M::T {
@@ -70,7 +69,7 @@ impl<M: Monoid> RawPersistentSegmentTree<M> {
                 }
             }
         }
-        return monoid.op(node.val(), &val);
+        monoid.op(node.val(), &val)
     }
 }
 
@@ -78,12 +77,12 @@ impl<M: Monoid> Clone for RawPersistentSegmentTree<M> {
     fn clone(&self) -> Self {
         match self {
             Self::Value(arg0) => Self::Value(arg0.clone()),
-            Self::Relay(arg0, arg1, arg2) => Self::Relay(arg0.clone(), arg1.clone(), arg2.clone()),
+            Self::Relay(arg0, arg1, arg2) => Self::Relay(*arg0, arg1.clone(), arg2.clone()),
         }
     }
 }
 
-/// 永続配列
+/// 永続セグメントツリー
 #[derive(Clone, Default)]
 pub struct PersistentSegmentTree<M: Monoid>(Option<Rc<RawPersistentSegmentTree<M>>>, M);
 
@@ -153,6 +152,16 @@ impl<M: Monoid> PersistentSegmentTree<M> {
                 }
             }
         }
+    }
+
+    /// SegmentTreeが空かどうか判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *N*)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// 値を設定する
@@ -318,15 +327,18 @@ mod tests {
     fn sum() {
         #[derive(Clone)]
         struct SumMonoid;
-        impl Monoid for SumMonoid {
+        impl super::super::util::Magma for SumMonoid {
             type T = i32;
-            fn e(&self) -> i32 {
-                0
-            }
             fn op(&self, a: &i32, b: &i32) -> i32 {
                 a + b
             }
         }
+        impl super::super::util::Identity for SumMonoid {
+            fn e(&self) -> i32 {
+                0
+            }
+        }
+        impl super::super::util::Associativity for SumMonoid {}
 
         let mut seg = PersistentSegmentTree::new(SumMonoid, 0..13);
         assert_eq!(seg.prod(1..5), 10);

@@ -1,22 +1,7 @@
+use crate::util::HasMin;
+
 use super::radixheap::{Radix, RadixHeap};
-
-/// 型がゼロに相当する値を持つことを表すトレイト
-pub trait HasZero {
-    /// ゼロに相当する値を返す
-    #[must_use]
-    fn zero() -> Self;
-}
-
-/// 整数型にHasZeroを実装するマクロ
-macro_rules! impl_zero {
-    ($($t: ty),*) => {$(
-        impl HasZero for $t {
-            fn zero() -> $t { 0 }
-        }
-    )*};
-}
-
-impl_zero! { u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize }
+use super::util::HasZero;
 
 /// RadixHeapに距離と頂点番号をセットで入れるための型
 #[derive(Clone, Copy)]
@@ -28,7 +13,7 @@ impl<T: Radix> PartialEq for DijkstraItem<T> {
 }
 impl<T: Radix> PartialOrd for DijkstraItem<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(&other.0)
+        Some(self.0.cmp(&other.0))
     }
 }
 impl<T: Radix> Eq for DijkstraItem<T> {}
@@ -37,11 +22,13 @@ impl<T: Radix> Ord for DijkstraItem<T> {
         self.0.cmp(&other.0)
     }
 }
-
+impl<T: Radix> HasMin for DijkstraItem<T> {
+    fn min_value() -> Self {
+        Self(T::min_value(), 0)
+    }
+}
 impl<T: Radix> Radix for DijkstraItem<T> {
     const MAX_DIST: usize = T::MAX_DIST;
-
-    const MIN: Self = DijkstraItem(T::MIN, 0);
 
     fn radix_dist(&self, rhs: &Self) -> usize {
         self.0.radix_dist(&rhs.0)
@@ -87,7 +74,7 @@ pub fn dijkstra<T: Radix + HasZero + std::ops::Add<Output = T>>(
         }
         for &(u, cost) in edges[v].as_ref() {
             let distance = distance + cost;
-            if upper[u].is_none_or(|d| &distance < &d) {
+            if upper[u].is_none_or(|d| distance < d) {
                 upper[u] = Some(distance);
                 heap.push(DijkstraItem(distance, u));
             }
@@ -129,7 +116,7 @@ pub fn dijkstra_tree<T: Radix + HasZero + std::ops::Add<Output = T>>(
         }
         for &(u, cost) in edges[v].as_ref() {
             let distance = distance + cost;
-            if nodes[u].is_none_or(|(d, _)| &distance < &d) {
+            if nodes[u].is_none_or(|(d, _)| distance < d) {
                 nodes[u] = Some((distance, v));
                 heap.push(DijkstraItem(distance, u));
             }

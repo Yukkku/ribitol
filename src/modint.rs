@@ -118,6 +118,7 @@ impl<const N: u32> Mul for ModInt<N> {
 impl<const N: u32> Div for ModInt<N> {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
+        #[allow(clippy::suspicious_arithmetic_impl)]
         self.mul_pow(rhs, Self::PHI - 1)
     }
 }

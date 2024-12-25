@@ -197,6 +197,16 @@ impl<T> BinaryTree<T> {
         self.len
     }
 
+    /// 平衡二分木が空かどうか判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     /// 値を指定の場所に挿入する
     ///
     /// # Constraints
@@ -270,10 +280,16 @@ impl<T> Drop for BinaryTree<T> {
     }
 }
 
+impl<T> Default for BinaryTree<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: std::fmt::Debug> std::fmt::Debug for BinaryTree<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
-        if self.len() >= 1 {
+        if !self.is_empty() {
             unsafe {
                 self.root.debug(self.len, &mut list);
             }

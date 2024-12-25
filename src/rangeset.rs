@@ -249,7 +249,7 @@ impl<T: Ord> BitXor for RangeSet<T> {
 
 impl<T: Ord + Debug> Debug for RangeSet<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.1.len() == 0 {
+        if self.1.is_empty() {
             if self.0 {
                 return f.write_str("RangeSet{(-inf, inf)}");
             } else {
@@ -295,6 +295,12 @@ impl<T: Ord> From<std::ops::RangeTo<T>> for RangeSet<T> {
 impl<T: Ord> From<std::ops::RangeFull> for RangeSet<T> {
     fn from(_: std::ops::RangeFull) -> Self {
         Self(true, vec![])
+    }
+}
+
+impl<T: Ord> Default for RangeSet<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

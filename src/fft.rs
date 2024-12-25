@@ -50,6 +50,13 @@ impl<const N: u32> FFTParam<N> {
     };
 }
 
+/// Z/NZ上で高速フーリエ変換を行う
+///
+/// # Constraints
+///
+/// - `a.len().is_power_of_two()`
+/// - `N - 1` は `a.len()` の倍数である.
+/// - `N` は素数である.
 pub fn fft<const N: u32>(a: &mut [ModInt<N>]) {
     debug_assert!(a.len().is_power_of_two());
     debug_assert!(a.len() <= 1 << FFTParam::<N>::D);
@@ -77,6 +84,26 @@ pub fn fft<const N: u32>(a: &mut [ModInt<N>]) {
     }
 }
 
+/// Z/NZ上で虐高速フーリエ変換を行う
+///
+/// 以下のように`fft`に入れたものを`ifft`に入れると元の値に戻る
+/// ```
+/// # use ribitol::{modint::*, fft::*};
+/// type Mint = ModInt<998244353>;
+/// let a = [Mint::new(3), Mint::new(4), Mint::new(2), Mint::new(8)];
+/// let mut b = a.clone();
+///
+/// fft(&mut b);
+/// ifft(&mut b);
+///
+/// assert_eq!(a, b);
+/// ```
+///
+/// # Constraints
+///
+/// - `a.len().is_power_of_two()`
+/// - `N - 1` は `a.len()` の倍数である.
+/// - `N` は素数である.
 pub fn ifft<const N: u32>(a: &mut [ModInt<N>]) {
     debug_assert!(a.len().is_power_of_two());
     debug_assert!(a.len() <= 1 << FFTParam::<N>::D);
@@ -109,6 +136,12 @@ pub fn ifft<const N: u32>(a: &mut [ModInt<N>]) {
     }
 }
 
+/// 高速フーリエ変換を用いて畳み込みを行う
+///
+/// # Constraints
+///
+/// - `N - 1` は `(a.len() + b.len() - 1).next_power_of_two()` の倍数である.
+/// - `N` は素数である.
 pub fn convolution<const N: u32>(a: &[ModInt<N>], b: &[ModInt<N>]) -> Vec<ModInt<N>> {
     let len = a.len() + b.len() - 1;
     let len_ceil = len.next_power_of_two();

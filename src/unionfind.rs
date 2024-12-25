@@ -25,6 +25,16 @@ impl UnionFind {
         self.0.len()
     }
 
+    /// UnionFindが空かどうか返す
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// 要素の連結成分数を返す.
     ///
     /// # Time complexity

@@ -41,9 +41,9 @@ const fn mr(a: u128) -> u64 {
     let (b, f) = a.overflowing_add(M.wrapping_mul(a as u64) as u128 * MOD as u128);
     let b = (b >> 64) as u64;
     if f || b >= MOD {
-        (b as u64).wrapping_sub(MOD)
+        b.wrapping_sub(MOD)
     } else {
-        b as u64
+        b
     }
 }
 
@@ -101,16 +101,6 @@ impl RollingHash {
             r = mul_mr(r, BASE);
         }
         Self(h, NonZero::new(r).unwrap())
-    }
-
-    /// 文字列のRollingHashを得る
-    ///
-    /// # Time complexity
-    ///
-    /// - *O*(`s.len()`)
-    #[must_use]
-    pub fn from_str(s: &str) -> Self {
-        Self::from_bytes(s.as_bytes())
     }
 }
 
@@ -176,24 +166,30 @@ impl std::fmt::Debug for RollingHash {
     }
 }
 
+impl Default for RollingHash {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn add() {
-        let a = RollingHash::from_str("Hello, World!");
-        let b = RollingHash::from_str("Hello, ");
-        let c = RollingHash::from_str("World!");
+        let a = RollingHash::from_bytes(b"Hello, World!");
+        let b = RollingHash::from_bytes(b"Hello, ");
+        let c = RollingHash::from_bytes(b"World!");
         assert_eq!(a, b + c);
         assert_ne!(a, c + b);
     }
 
     #[test]
     fn sub() {
-        let a = RollingHash::from_str("Hello, World!");
-        let b = RollingHash::from_str("Hello, ");
-        let c = RollingHash::from_str("World!");
+        let a = RollingHash::from_bytes(b"Hello, World!");
+        let b = RollingHash::from_bytes(b"Hello, ");
+        let c = RollingHash::from_bytes(b"World!");
         assert_eq!(a - c, b);
         assert_ne!(a - b, c);
     }

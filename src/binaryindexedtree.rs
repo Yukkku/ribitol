@@ -1,7 +1,9 @@
 use super::weightedunionfind::Group;
+use crate::util::Commutativity;
 
-/// 群が可換であることを示すトレイト
-pub trait AbelianGroup: Group {}
+/// アーベル群のトレイト
+pub trait AbelianGroup: Group + Commutativity {}
+impl<T: Group + Commutativity> AbelianGroup for T {}
 
 /// BinaeyIndexedTree. FenwickTreeとも
 ///
@@ -28,6 +30,16 @@ impl<G: AbelianGroup> BinaryIndexedTree<G> {
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// BinaryIndexedTreeが空か判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     /// `index`番目の要素に`val`を掛ける
@@ -89,20 +101,27 @@ mod test {
 
     #[test]
     fn add() {
+        use super::super::util::{Associativity, Commutativity, Identity, Inverse, Magma};
+
         struct G;
-        impl Group for G {
+        impl Magma for G {
             type T = i32;
-            fn e(&self) -> i32 {
-                0
-            }
-            fn inv(&self, a: &i32) -> i32 {
-                -a
-            }
             fn op(&self, a: &i32, b: &i32) -> i32 {
                 a + b
             }
         }
-        impl AbelianGroup for G {}
+        impl Inverse for G {
+            fn inv(&self, a: &i32) -> i32 {
+                -a
+            }
+        }
+        impl Identity for G {
+            fn e(&self) -> i32 {
+                0
+            }
+        }
+        impl Associativity for G {}
+        impl Commutativity for G {}
 
         let mut v = BinaryIndexedTree::new(G, 10);
         assert_eq!(v.sum(1..5), 0);

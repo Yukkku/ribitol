@@ -8,6 +8,9 @@ pub trait LazyMonoid: Monoid {
     fn map(&self, f: &Self::F, x: &Self::T) -> Self::T;
 }
 
+/// 遅延伝搬セグメントツリー
+///
+/// 特定の条件を満たすクエリの区間更新・区間取得が可能である
 pub struct LazySegmentTree<M: LazyMonoid>(Box<[M::T]>, Box<[M::F]>, M);
 
 impl<M: LazyMonoid> LazySegmentTree<M> {
@@ -53,9 +56,24 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
         )
     }
 
+    /// 列の長さを返す.
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len() - self.1.len()
+    }
+
+    /// 列が空かどうか判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     fn map(&mut self, index: usize) {
@@ -141,19 +159,29 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
                 slice[len + (l >> (i + 1))] =
                     self.2.op(&slice[(l >> i) & !1], &slice[(l >> i) | 1]);
             }
-            if r >> (i + 1) < len >> 1 {
-                if l >> (i + 1) != r >> (i + 1) && r >> (i + 1) != ((r - 1) >> (r + 1)) + 1 {
-                    slice[len + ((r - 1) >> (i + 1)) + 1] = self.2.op(
-                        &slice[(((r - 1) >> i) + 2) & !1],
-                        &slice[(((r - 1) >> i) + 2) | 1],
-                    );
-                }
+            if r >> (i + 1) < len >> 1
+                && l >> (i + 1) != r >> (i + 1)
+                && r >> (i + 1) != ((r - 1) >> (r + 1)) + 1
+            {
+                slice[len + ((r - 1) >> (i + 1)) + 1] = self.2.op(
+                    &slice[(((r - 1) >> i) + 2) & !1],
+                    &slice[(((r - 1) >> i) + 2) | 1],
+                );
             }
             slice = &mut slice[len..];
             len >>= 1;
         }
     }
 
+    /// 指定した位置の値を変更する
+    ///
+    /// # Constraints
+    ///
+    /// - `index < self.len()`
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
     pub fn set(&mut self, index: usize, item: M::T) {
         debug_assert!(index < self.len());
 
@@ -162,26 +190,33 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
         self.update(index);
     }
 
+    /// 指定した位置の要素の可変参照のラッパーを返す
+    ///
+    /// # Constraints
+    ///
+    /// - `index < self.len()`
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
+    /// - *O*(log *n*) (デストラクタ)
     #[must_use]
-    pub fn setter<'a>(
-        &'a mut self,
-        index: usize,
-    ) -> impl std::ops::DerefMut<Target = M::T> + use<'a, M> {
+    pub fn setter(&mut self, index: usize) -> impl std::ops::DerefMut<Target = M::T> + use<'_, M> {
         debug_assert!(index < self.len());
 
         struct Wrapper<'a, M: LazyMonoid>(&'a mut LazySegmentTree<M>, usize);
-        impl<'a, M: LazyMonoid> std::ops::Deref for Wrapper<'a, M> {
+        impl<M: LazyMonoid> std::ops::Deref for Wrapper<'_, M> {
             type Target = M::T;
             fn deref(&self) -> &M::T {
                 &self.0 .0[self.1]
             }
         }
-        impl<'a, M: LazyMonoid> std::ops::DerefMut for Wrapper<'a, M> {
+        impl<M: LazyMonoid> std::ops::DerefMut for Wrapper<'_, M> {
             fn deref_mut(&mut self) -> &mut M::T {
                 &mut self.0 .0[self.1]
             }
         }
-        impl<'a, M: LazyMonoid> Drop for Wrapper<'a, M> {
+        impl<M: LazyMonoid> Drop for Wrapper<'_, M> {
             fn drop(&mut self) {
                 self.0.update(self.1);
             }
@@ -191,12 +226,31 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
         Wrapper(self, index)
     }
 
+    /// 指定した位置の値を取得する
+    ///
+    /// # Constraints
+    ///
+    /// - `index < self.len()`
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
     #[must_use]
     pub fn get(&mut self, index: usize) -> &M::T {
         debug_assert!(index < self.len());
         self.map(index);
         &self.0[index]
     }
+
+    /// 指定した位置の値を取得する
+    ///
+    /// # Constraints
+    ///
+    /// - `index < self.len()`
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
     #[must_use]
     pub fn get_imu(&self, index: usize) -> M::T {
         debug_assert!(index < self.len());
@@ -213,6 +267,15 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
         self.2.map(&f, &self.0[index])
     }
 
+    /// 指定した区間の値の総積を計算する
+    ///
+    /// # Constraints
+    ///
+    /// - `range`は`0..self.len()`に含まれる区間である.
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
     pub fn prod(&mut self, range: impl std::ops::RangeBounds<usize>) -> M::T {
         let mut len = self.len();
         let mut left_index = match range.start_bound() {
@@ -244,12 +307,21 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
             }
             slice = &slice[len..];
             len >>= 1;
-            left_index = left_index >> 1;
-            right_index = right_index >> 1;
+            left_index >>= 1;
+            right_index >>= 1;
         }
         self.2.op(&left_val, &right_val)
     }
 
+    /// 指定した区間に作用素`f`を適用する
+    ///
+    /// # Constraints
+    ///
+    /// - `range`は`0..self.len()`に含まれる区間である.
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(log *n*)
     pub fn apply(&mut self, range: impl std::ops::RangeBounds<usize>, f: &M::F) {
         let mut len = self.len();
         let left = match range.start_bound() {
@@ -297,8 +369,8 @@ impl<M: LazyMonoid> LazySegmentTree<M> {
                 slice = &mut slice[len..];
                 slice_v = &mut slice_v[len..];
                 len >>= 1;
-                left = left >> 1;
-                right = right >> 1;
+                left >>= 1;
+                right >>= 1;
             }
         }
         self.update_range(left, right);
@@ -312,15 +384,18 @@ mod tests {
     #[test]
     fn minmax_add() {
         struct TestMonoid;
-        impl Monoid for TestMonoid {
+        impl super::super::util::Magma for TestMonoid {
             type T = (i32, i32);
-            fn e(&self) -> (i32, i32) {
-                (i32::MAX, i32::MIN)
-            }
             fn op(&self, &a: &(i32, i32), &b: &(i32, i32)) -> (i32, i32) {
                 (a.0.min(b.0), a.1.max(b.1))
             }
         }
+        impl super::super::util::Identity for TestMonoid {
+            fn e(&self) -> (i32, i32) {
+                (i32::MAX, i32::MIN)
+            }
+        }
+        impl super::super::util::Associativity for TestMonoid {}
         impl LazyMonoid for TestMonoid {
             type F = i32;
             fn id(&self) -> i32 {

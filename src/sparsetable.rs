@@ -1,9 +1,10 @@
-use super::segmenttree::Monoid;
+use super::util::{Associativity, Idempotence, Identity};
 
 /// 冪等性を表すトレイト
 ///
 /// 任意の`x`について`self.op(&x, &x) == x`を満たす必要がある
-pub trait IdempotentMonoid: Monoid {}
+pub trait IdempotentMonoid: Associativity + Idempotence + Identity {}
+impl<T: Associativity + Idempotence + Identity> IdempotentMonoid for T {}
 
 /// 区間最小値クエリなどを定数時間で処理できるデータ構造
 #[derive(Clone)]
@@ -18,6 +19,7 @@ where
     /// # Time complexity
     ///
     /// - *O*(*N* log *N*)
+    #[must_use]
     pub fn new(monoid: M, items: impl Into<Vec<M::T>>) -> Self {
         let mut items: Vec<M::T> = items.into();
         let len = items.len();
@@ -41,8 +43,19 @@ where
     /// # Time complexity
     ///
     /// - *O*(1)
+    #[must_use]
     pub fn len(&self) -> usize {
         self.1
+    }
+
+    /// 列が空かどうか調べる
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.1 == 0
     }
 
     /// `range`の範囲の総積を計算する
@@ -54,6 +67,7 @@ where
     /// # Time complexity
     ///
     /// - *O*(1)
+    #[must_use]
     pub fn query(&self, range: impl std::ops::RangeBounds<usize>) -> M::T {
         let len = self.1;
         let left = match range.start_bound() {
@@ -90,16 +104,19 @@ mod tests {
     #[test]
     fn min_max() {
         struct MinMaxMonoid;
-        impl Monoid for MinMaxMonoid {
+        impl super::super::util::Magma for MinMaxMonoid {
             type T = (i32, i32);
-            fn e(&self) -> (i32, i32) {
-                (i32::MAX, i32::MIN)
-            }
             fn op(&self, a: &(i32, i32), b: &(i32, i32)) -> (i32, i32) {
                 (a.0.min(b.0), a.1.max(b.1))
             }
         }
-        impl IdempotentMonoid for MinMaxMonoid {}
+        impl Identity for MinMaxMonoid {
+            fn e(&self) -> (i32, i32) {
+                (i32::MAX, i32::MIN)
+            }
+        }
+        impl Associativity for MinMaxMonoid {}
+        impl Idempotence for MinMaxMonoid {}
 
         let table = SparseTable::new(
             MinMaxMonoid,

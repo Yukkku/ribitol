@@ -31,7 +31,7 @@ impl Rng {
         self.0
     }
     fn choose(&mut self, a: usize, b: usize) -> bool {
-        ((self.gen() as u128 * (a + b) as u128 >> 64) as usize) < a
+        (((self.gen() as u128 * (a + b) as u128) >> 64) as usize) < a
     }
 
     fn make(&mut self) -> Self {
@@ -347,6 +347,8 @@ impl<M: MasterManager> NodeWrapper<M> {
     }
 
     fn prod_left(&self, mut len: usize, mut index: usize) -> M::Prod {
+        use std::cmp::Ordering::*;
+
         if index == 0 {
             return M::e();
         }
@@ -356,25 +358,29 @@ impl<M: MasterManager> NodeWrapper<M> {
         }
         let mut ret = M::e();
         loop {
-            if index < node.idx {
-                len = node.idx;
-                node = node.left.as_ref().unwrap().setup(len);
-            } else if index == node.idx {
-                return M::op(
-                    ret,
-                    M::info2prod(&node.left.as_ref().unwrap().setup(node.idx).info),
-                );
-            } else {
-                if let Some(left) = node.left.as_ref() {
-                    ret = M::op(ret, M::info2prod(&left.setup(node.idx).info));
+            match index.cmp(&node.idx) {
+                Less => {
+                    len = node.idx;
+                    node = node.left.as_ref().unwrap().setup(len);
                 }
-                ret = M::op(ret, M::val2prod(&node.val));
-                if index == node.idx + 1 {
-                    return ret;
+                Equal => {
+                    return M::op(
+                        ret,
+                        M::info2prod(&node.left.as_ref().unwrap().setup(node.idx).info),
+                    );
                 }
-                index -= node.idx + 1;
-                len -= node.idx + 1;
-                node = node.right.as_ref().unwrap().setup(len);
+                Greater => {
+                    if let Some(left) = node.left.as_ref() {
+                        ret = M::op(ret, M::info2prod(&left.setup(node.idx).info));
+                    }
+                    ret = M::op(ret, M::val2prod(&node.val));
+                    if index == node.idx + 1 {
+                        return ret;
+                    }
+                    index -= node.idx + 1;
+                    len -= node.idx + 1;
+                    node = node.right.as_ref().unwrap().setup(len);
+                }
             }
         }
     }
@@ -529,6 +535,16 @@ impl<M: MasterManager> MasterTree<M> {
         self.1
     }
 
+    /// 列が空かどうか判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.1 == 0
+    }
+
     /// 2つの列を混ぜた新しいMasterTreeを作る
     ///
     /// # Constraints
@@ -644,7 +660,7 @@ impl<M: MasterManager> MasterTree<M> {
                 (self.1, Some(self.1))
             }
         }
-        impl<'a, M: MasterManager> ExactSizeIterator for Iter<'a, M> {
+        impl<M: MasterManager> ExactSizeIterator for Iter<'_, M> {
             fn len(&self) -> usize {
                 self.1
             }
@@ -822,6 +838,12 @@ impl<M: MasterManager<T: std::fmt::Debug>> std::fmt::Debug for MasterTree<M> {
         let mut list: std::fmt::DebugList<'_, '_> = f.debug_list();
         internal(&self.0, self.1, &mut list);
         list.finish()
+    }
+}
+
+impl<M: MasterManager> Default for MasterTree<M> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

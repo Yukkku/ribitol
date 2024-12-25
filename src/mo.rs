@@ -30,7 +30,7 @@ struct Manager<'a, T> {
     order: Box<[(u64, usize)]>,
 }
 
-impl<'a, T> Manager<'a, T> {
+impl<T> Manager<'_, T> {
     fn len(&self) -> usize {
         self.output.len()
     }
@@ -44,7 +44,7 @@ impl<'a, T> Manager<'a, T> {
     }
 }
 
-impl<'a, T> Drop for Manager<'a, T> {
+impl<T> Drop for Manager<'_, T> {
     fn drop(&mut self) {
         if self.progress == self.len() || !std::mem::needs_drop::<T>() {
             return;

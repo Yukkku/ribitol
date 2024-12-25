@@ -1,4 +1,4 @@
-/// トポロジカルソートをする
+/// トポロジカルソートを行い, そのイテレータを返す
 ///
 /// # Time complexity
 ///
@@ -20,7 +20,7 @@ pub fn topological_sort<T: AsRef<[usize]>>(
         .collect();
 
     struct Iter<'b, T: AsRef<[usize]>>(&'b [T], Box<[usize]>, Vec<usize>, usize);
-    impl<'b, T: AsRef<[usize]>> Iterator for Iter<'b, T> {
+    impl<T: AsRef<[usize]>> Iterator for Iter<'_, T> {
         type Item = usize;
         fn next(&mut self) -> Option<usize> {
             let v = self.2.pop()?;

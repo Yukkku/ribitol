@@ -21,6 +21,16 @@ impl PersistentUFRef {
         self.0.len()
     }
 
+    /// 空かどうか判定する
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// `index`が属するグループの代表を返す
     ///
     /// # Constraints
@@ -74,6 +84,16 @@ impl PersistentUnionFind {
     #[must_use]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// PersistentUnionFindが空かどうか調べる
+    ///
+    /// # Time complexity
+    ///
+    /// - *O*(1)
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     #[must_use]

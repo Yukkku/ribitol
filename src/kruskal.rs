@@ -10,11 +10,10 @@ use super::unionfind::UnionFind;
 /// # Time complexity
 ///
 /// - *O*(*E* log *E*)
-#[must_use]
-pub fn kruskal<'a, T: Ord>(
+pub fn kruskal<T: Ord>(
     n: usize,
-    edges: &'a [(usize, usize, T)],
-) -> impl Iterator<Item = usize> + use<'a, T> {
+    edges: &[(usize, usize, T)],
+) -> impl Iterator<Item = usize> + use<'_, T> {
     let mut iv = (0..edges.len()).collect::<Vec<_>>();
     iv.sort_unstable_by_key(|&i| &edges[i].2);
     let mut uf = UnionFind::new(n);

@@ -22,3 +22,5 @@ pub mod waveletmatrix;
 pub mod weightedunionfind;
 pub mod wordsizetree;
 pub mod z;
+
+pub mod util;

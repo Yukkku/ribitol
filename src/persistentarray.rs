@@ -124,9 +124,7 @@ impl<T> PersistentArray<T> {
     where
         T: Clone,
     {
-        let Some(node) = self.0.as_mut() else {
-            return None;
-        };
+        let node = self.0.as_mut()?;
         if matches!(node.as_ref(), Value(_)) {
             let Some(Some(Value(v))) = std::mem::take(&mut self.0).map(Rc::into_inner) else {
                 unreachable!()
@@ -214,10 +212,8 @@ impl<T: Clone> std::ops::IndexMut<usize> for PersistentArray<T> {
 impl<T> FromIterator<T> for PersistentArray<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let mut r = Self(None);
-        let mut len = 0;
-        for v in iter {
+        for (len, v) in iter.into_iter().enumerate() {
             r.push_with_len(len, v);
-            len += 1;
         }
         r
     }
